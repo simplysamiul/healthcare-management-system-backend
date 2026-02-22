@@ -23,7 +23,7 @@ const loginUser = catchAsync(
         sendResponse(res, {
             httpStatusCode: 200,
             success: true,
-            message: "User logged in successfully",
+            message: "Patient logged in successfully",
             data: result
         })
     }

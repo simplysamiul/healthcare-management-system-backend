@@ -24,9 +24,6 @@ const registerPatient = async (payload: IRegisterPatientPayload) => {
         throw new Error("Failed to register patient");
     }
 
-    // const patient = await prisma.$transaction(async (tx) => {
-    //     await tx.
-    // })
 
     return data;
 };
