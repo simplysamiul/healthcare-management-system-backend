@@ -25,23 +25,33 @@ const registerPatient = async (payload: IRegisterPatientPayload) => {
         throw new Error("Failed to register patient");
     }
 
-    const patient  = await prisma.$transaction(async(tx)=> {
-        const patientTx = await tx.patient.create({
-            data: {
-                userId: data.user.id, 
-                name: payload.name,
-                email: payload.email,
-            }
+    try {
+        const patient = await prisma.$transaction(async (tx) => {
+            const patientTx = await tx.patient.create({
+                data: {
+                    userId: data.user.id,
+                    name: payload.name,
+                    email: payload.email,
+                }
+            })
+
+            return patientTx;
         })
 
-        return patientTx;
-    })
 
-
-    return {
-        ...data,
-        patient
-    };
+        return {
+            ...data,
+            patient
+        };
+    } catch (error) {
+        console.log("Transaction failed, rolling back", error);
+        await prisma.user.delete({
+            where: {
+                id: data.user.id
+            }
+        });
+        throw Error;
+    }
 };
 
 interface ILoginUserPayload {
@@ -50,8 +60,8 @@ interface ILoginUserPayload {
 }
 
 
-const loginUser = async(Payload:ILoginUserPayload) => {
-    const {email, password} = Payload;
+const loginUser = async (Payload: ILoginUserPayload) => {
+    const { email, password } = Payload;
     const data = await auth.api.signInEmail({
         body: {
             email,
@@ -59,11 +69,11 @@ const loginUser = async(Payload:ILoginUserPayload) => {
         }
     });
 
-    if(data.user.status === UserStatus.BLOCKED) {
+    if (data.user.status === UserStatus.BLOCKED) {
         throw new Error("User is blocked");
     }
 
-    if(data.user.isDeleted || data.user.status === UserStatus.DELETED) {
+    if (data.user.isDeleted || data.user.status === UserStatus.DELETED) {
         throw new Error("User is deleted");
     }
 
