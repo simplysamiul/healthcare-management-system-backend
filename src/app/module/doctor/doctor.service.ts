@@ -32,7 +32,8 @@ const getDoctorById = async(id: string) => {
 
 
     return doctro;
-}
+};
+
 
 
 
